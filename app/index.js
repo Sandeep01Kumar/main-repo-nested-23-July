@@ -36,6 +36,24 @@ app.use((req, res) => {
   res.status(404).type("text/plain").send("Not Found");
 });
 
-app.listen(3000, () => {
+/**
+ * Starts the HTTP server on port 3000, logging the startup line once the socket is bound.
+ *
+ * Express 5's `app.listen` wraps this callback with `once` and registers it for BOTH the
+ * underlying server's "listening" and "error" events, so the callback receives the bind
+ * error as its first argument when the port cannot be acquired. Guarding on `err` preserves
+ * the original core-`http` lifecycle: a failed bind (e.g. EADDRINUSE when port 3000 is
+ * already in use) reports the error on stderr and exits with a non-zero status, rather than
+ * silently printing a false "Server running" line and exiting 0.
+ *
+ * @param {Error} [err] - The bind error; present only when startup fails, undefined on success.
+ * @returns {void}
+ */
+app.listen(3000, (err) => {
+  if (err) {
+    console.error(err.message);
+    process.exit(1);
+    return;
+  }
   console.log("Server running on http://localhost:3000");
 });
