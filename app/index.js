@@ -2,6 +2,15 @@ const express = require("express");
 
 const app = express();
 
+// Disable Express's default ETag generation so responses carry no ETag, exactly
+// as the original core-`http` server behaved. With ETags enabled, a successful
+// GET (200) advertises a weak ETag and a subsequent conditional request that
+// echoes it back in `If-None-Match` is answered with an empty `304 Not Modified`
+// (no body, no Content-Type). Disabling ETag guarantees the exact `200` +
+// plain-text body contract holds for every request to "/" and "/good-evening",
+// including cache-revalidating clients and repeat browser navigations.
+app.disable("etag");
+
 /**
  * Handles GET requests to the root path ("/").
  * Responds with HTTP 200 and the plain-text body "Hello World".
